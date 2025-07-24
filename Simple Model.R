@@ -7,23 +7,27 @@ source("DartsAnalysis/MCMC.R")
 
 # read data from excel and draw data
 data <- read_excel("DartsAnalysis/Maxfield - Darts.xlsx") %>%
-  select(angle:Veronica) %>%
-  filter(!is.na(Date)) %>%
-  clean_names()
+  clean_names() %>%
+  select(angle:joseph) %>%
+  filter(!is.na(date))
 
 # compute samples for Caleb - this is definitely not linear in n
 tic()
-caleb_data <- data %>% select(caleb) %>% drop_na() %>% pull()
-caleb_samples <- mh_sampler(caleb_data, proposal_change = 1.4, c(5, 3, 2, 2))
+caleb_data <- data %>% pull(caleb) %>% na.omit() %>% as.numeric()
+caleb_samples <- mh_sampler(caleb_data)
 toc()
 
 # acceptance rate ~27%, need to make this adaptive
-caleb_samples[[2]]
+caleb_samples$acc_rate %>% colMeans()
 
 # summary statistics
-caleb_samples[[1]] %>% summary()
+caleb_samples$rho %>% as.mcmc() %>% summary()
 
-caleb_samples[[1]] %>% plot()
+caleb_samples$rho %>% as.mcmc() %>% plot()
+
+caleb_samples$new_y %>% summary()
+
+caleb_samples$new_y %>% as.mcmc() %>% plot()
 
 freq_fun <- function(df, name){
   df %>% group_by(y) %>%
@@ -33,7 +37,7 @@ freq_fun <- function(df, name){
     rename_with(~paste0(name), starts_with("prop"))
 }
 
-tibble(y = caleb_samples[[1]][,5]) %>%
+tibble(y = caleb_samples$new_y) %>%
   freq_fun("sampled") %>%
   left_join(tibble(y = caleb_data) %>% freq_fun("observed"), by = join_by(y)) %>%
   ggplot() +
