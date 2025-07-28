@@ -11,14 +11,14 @@ data <- read_excel("DartsAnalysis/Maxfield - Darts.xlsx") %>%
   select(angle:joseph) %>%
   filter(!is.na(date))
 
-# compute samples for Caleb - this is definitely not linear in n
+# compute samples for Caleb
 tic()
-caleb_data <- data %>% pull(caleb) %>% na.omit() %>% as.numeric()
+caleb_data <- data %>% filter(angle == "vertical", height == "mid", base == "magnet") %>% pull(caleb) %>% na.omit() %>% as.numeric()
 caleb_samples <- mh_sampler(caleb_data)
 toc()
 
-# acceptance rate ~27%, need to make this adaptive
-caleb_samples$acc_rate %>% colMeans()
+# acceptance rate
+caleb_samples$acc_rate %>% mean()
 
 # summary statistics
 caleb_samples$rho %>% as.mcmc() %>% summary()
@@ -44,37 +44,35 @@ tibble(y = caleb_samples$new_y) %>%
   geom_line(aes(x = y, sampled), color = "cadetblue4") +
   geom_line(aes(x = y, observed), color = "indianred3")
 
-tibble(samples = caleb_samples[[1]][,5])
+# compute samples for Joshua
+joshua_data <- data %>% filter(angle == "vertical", height == "mid", base == "magnet") %>% pull(joshua) %>% na.omit() %>% as.numeric()
+joshua_samples <- mh_sampler(joshua_data)
 
-# compute samples for Joshua - this is definitely not linear in n
-joshua_data <- data %>% select(joshua) %>% drop_na() %>% pull()
-joshua_samples <- mh_sampler(joshua_data, proposal_change = 1.4, alpha = c(5, 3, 2, 2))
-
-# acceptance rate ~28%, need to make this adaptive
-joshua_samples[[2]]
+# acceptance rate
+joshua_samples$acc_rate %>% mean()
 
 # summary statistics
-joshua_samples[[1]] %>% summary()
+joshua_samples$rho %>% as.mcmc() %>% summary()
 
-joshua_samples[[1]] %>% plot()
+joshua_samples$rho %>% as.mcmc() %>% plot()
 
-tibble(y = joshua_samples[[1]][,5]) %>%
+tibble(y = joshua_samples$new_y) %>%
   freq_fun("sampled") %>%
   left_join(tibble(y = joshua_data) %>% freq_fun("observed"), by = join_by(y)) %>%
   ggplot() +
   geom_line(aes(x = y, sampled), color = "cadetblue4") +
   geom_line(aes(x = y, observed), color = "indianred3")
 
-# compute samples for Quadri - this is definitely not linear in n
-quadri_data <- data %>% select(quadri) %>% drop_na() %>% pull()
-quadri_samples <- mh_sampler(quadri_data, proposal_change = 2.5, alpha = c(5, 3, 2, 2))
+# compute samples for Quadri
+quadri_data <- data %>% filter(angle == "vertical", height == "mid", base == "magnet") %>% pull(quadri) %>% na.omit() %>% as.numeric()
+quadri_samples <- mh_sampler(quadri_data)
 
-# acceptance rate ~33%, need to make this adaptive
-quadri_samples[[2]]
+# acceptance rate
+quadri_samples$acc_rate %>% mean()
 
 # summary statistics
-quadri_samples[[1]] %>% summary()
+quadri_samples$rho %>% as.mcmc() %>% summary()
 
-quadri_samples[[1]] %>% plot()
+quadri_samples$rho %>% as.mcmc() %>% plot()
 
 
