@@ -223,7 +223,7 @@ game_chart_wrapper <- function(game_id, data, player_probabilities){
   height <- specific_game %>% slice(1) %>% pull(height)
   
   game_tibble <- specific_game %>% select(round, all_of(convert_order(order))) %>%
-    mutate(across(everything(), ~as.numeric(.x)))
+    mutate(across(all_of(convert_order(order)), ~as.numeric(.x)))
   
   chart_game_probability(full_game_tibble = game_tibble, order = order, data = data, height = height, player_probabilities = player_probabilities) +
     labs(title = str_c("Game ", game_id, " Win Probability", y = ""))
@@ -234,6 +234,10 @@ game_chart_wrapper <- function(game_id, data, player_probabilities){
 #   chart_game_probability(order = "QJ", data = data, height = "mid", player_probabilities)
 
 tic()
-game_chart_wrapper(126, data, player_probabilities)
+game_chart_wrapper(112, data, player_probabilities)
+toc()
+
+tic()
+game_chart_wrapper(182, data, player_probabilities)
 toc()
 
