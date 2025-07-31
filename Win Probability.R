@@ -127,7 +127,15 @@ compute_win_probability <- function(game_tibble, data, height, player_probabilit
   
   players <- game_table %>% colnames()
   
-  rounds_left <- game_table %>% group_by() %>% summarize(across(everything(), ~sum(is.na(.x))))
+  rounds_left <- game_tibble %>%
+    rowwise() %>%
+    mutate(na = sum(is.na(c_across(all_of(players))))) %>%
+    ungroup() %>%
+    mutate(
+      prev_na = if_else(cumsum(na) == na, 0, 1),
+      remove = if_else(str_detect(round, "OT") & prev_na, 1, 0)) %>%
+    filter(remove != 1) %>%
+    group_by() %>% summarize(across(all_of(players), ~sum(is.na(.x))))
   
   current_score <- game_table %>% group_by() %>% summarize(across(everything(), ~sum(.x, na.rm = TRUE)))
   
@@ -158,9 +166,6 @@ compute_win_probability <- function(game_tibble, data, height, player_probabilit
 
 # examples
 # can compute this ahead of time (if computing multiple game probabilities) or in compute_win_probability function
-tic()
-player_probabilities <- c("caleb", "joshua", "quadri", "joseph", "daniel") %>% compute_player_probabilities(data, "mid")
-toc()
 
 # game_tibble <- tibble(round = c(1, 2, 3), caleb = c(0, 0, NA), joshua = c(1, 2, NA))
 # compute_win_probability(game_tibble, data = data, height = "mid", player_probabilities)
@@ -234,10 +239,14 @@ game_chart_wrapper <- function(game_id, data, player_probabilities){
 #   chart_game_probability(order = "QJ", data = data, height = "mid", player_probabilities)
 
 tic()
-game_chart_wrapper(112, data, player_probabilities)
+player_probabilities <- c("caleb", "joshua", "quadri", "joseph", "daniel") %>% compute_player_probabilities(data, "mid")
 toc()
 
 tic()
-game_chart_wrapper(182, data, player_probabilities)
+game_chart_wrapper(190, data, player_probabilities)
+toc()
+
+tic()
+game_chart_wrapper(191, data, player_probabilities)
 toc()
 
