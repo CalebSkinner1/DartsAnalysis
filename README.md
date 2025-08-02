@@ -6,7 +6,7 @@ This GitHub Page hosts the results and analysis of a dartboard competition playe
 This R Script contains a likelihood function and a Metropolis Hasting algorithm that samples from the posterior distribution of interest. Metropolis Hastings is required in this setting, because the aggregate scores are recorded but the distribution of an individual throw is desired. Leveraging the individual throws to model the aggregate scores provides a much stronger fit, because the aggregate scores are not necessarily unimodal or monotonic like a typical discrete parametric distribution. I use a dirichlet random walk to propose a new distribution in the MH algorithm.
 
 ## Simple Model.R
-I actualize the functions in MCMC.R and plots results for an early model attempt. This model places a dirichlet prior on the throw probabilities, and models each player's probabilities independently. In the future, I hope to account for potential impactful covariates and acknowledge the potential dependence of successive throws and rounds.
+I actualize the functions in MCMC.R and plots results for an early model attempt. This model places a dirichlet prior on the throw probabilities, and models each player's probabilities independently. This page contains MCMC diagnostic traceplots and histograms. In the future, I hope to account for potential impactful covariates and acknowledge the potential dependence of successive throws and rounds.
 
 ## Win Probability.R
 Here, I leverage the score-per round-distribution for each player to compute in-game win probabilities. These win probabilities are specific to the current score and the players involved. I also produce functions for easily charting the win probability over an entire game.
