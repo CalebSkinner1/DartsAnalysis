@@ -4,7 +4,7 @@ library("janitor")
 library("tictoc")
 library("plotly")
 
-source("DartsAnalysis/MCMC.R")
+source("MCMC.R")
 
 compute_player_probabilities <- function(players, data, height){
   probs_table <- map(players, ~{

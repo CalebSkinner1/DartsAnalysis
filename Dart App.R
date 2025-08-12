@@ -4,7 +4,11 @@ library("shiny")
 library("shinydashboard")
 library("DT")
 
-source("DartsAnalysis/Dart App Support.R")
+if (interactive()) {
+  setwd(here::here("DartsAnalysis"))
+}
+
+source("Dart App Support.R")
 
 ui <- dashboardPage(
   skin = "blue",

@@ -29,10 +29,10 @@ save(density_254, file = "DartsAnalysis/Densities/density_254.RData")
 density_list <- list("mid" = density_mid, "high" = density_high, "low" = density_low, "254" = density_254)
 
 # examples
-tic()
+# tic()
 # game_chart_wrapper(192, data, density_list)
-p <- game_chart_wrapper(79, data, density_list)
-toc()
+# p <- game_chart_wrapper(79, data, density_list)
+# toc()
 
 
 
