@@ -204,22 +204,24 @@ chart_game_probability <- function(full_game_tibble, order, data, height, player
       pivot_wider(names_from = "player", values_from = "score") %>%
       compute_win_probability(data = data, height = height, player_probabilities = player_probabilities) %>%
       pivot_wider(names_from = "player", values_from = "win_prob") %>%
-      mutate(throw = .x)
+      mutate(round = .x/length(players) + 1)
     }) %>%
     pivot_longer(cols = all_of(players), values_to = "win_prob", names_to = "player")
   
   win_prob_data %>%
     ggplot() +
-    geom_line(aes(x = throw, y = win_prob, color = player)) +
-    labs(x = "Throw", y = "Win Probability")
+    geom_line(aes(x = round, y = win_prob, color = player)) +
+    labs(x = "Round", y = "Win Probability")
 }
 
-game_chart_wrapper <- function(game_id, data, player_probabilities){
+game_chart_wrapper <- function(game_id, data, player_probabilities_list){
   specific_game <- data %>% filter(game == game_id)
   
   order <- specific_game %>% slice(1) %>% pull(order)
   
   height <- specific_game %>% slice(1) %>% pull(height)
+  
+  player_probabilities <- player_probabilities_list[[height]]
   
   game_tibble <- specific_game %>% select(round, all_of(convert_order(order))) %>%
     mutate(across(all_of(convert_order(order)), ~as.numeric(.x)))
@@ -229,4 +231,6 @@ game_chart_wrapper <- function(game_id, data, player_probabilities){
   
   ggplotly(p)
 }
+
+
 
