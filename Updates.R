@@ -1,12 +1,12 @@
 # Update Dart Board
 # this page allows one to run the app and update the densities if desired
 
-# update densities
-source("Win Probability.R")
-
 if (interactive()) {
   setwd(("DartsAnalysis"))
 }
+
+# update densities
+source("Win Probability.R")
 
 rsconnect::deployApp(appName = "darts-win-probability",
                      account = "calebskinner",
