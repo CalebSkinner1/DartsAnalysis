@@ -13,3 +13,4 @@ rsconnect::deployApp(appName = "darts-win-probability",
                      forceUpdate = TRUE,
                      appPrimaryDoc = "Dart App.R",
                      appFiles = NULL)
+
