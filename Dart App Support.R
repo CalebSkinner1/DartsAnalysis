@@ -11,9 +11,9 @@ data <- read_excel("Maxfield - Darts.xlsx") %>%
 load("Densities/density_mid.RData")
 load("Densities/density_high.RData")
 load("Densities/density_low.RData")
-load("Densities/density_254.RData")
+load("Densities/density_256.RData")
 
 names <- c("caleb", "joshua", "quadri", "joseph", "daniel")
 
 density_list <- list("mid" = density_mid, "high" = density_high,
-                     "low" = density_low, "254" = density_254)
+                     "low" = density_low, "256" = density_256)
