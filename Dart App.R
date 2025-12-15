@@ -5,7 +5,7 @@ library("shinydashboard")
 library("DT")
 
 if (interactive()) {
-  setwd(here::here("DartsAnalysis"))
+  # setwd(here::here("DartsAnalysis"))
 }
 
 source("Dart App Support.R")
@@ -25,23 +25,57 @@ ui <- dashboardPage(
         # Home Tab
         tabName = "home",
         titlePanel("Dart Board Win Probability App"),
-        p("This website is intended to provide quick win probability estimates for in-game Darts Games.
-          More details to come - if I feel inclined.")
-        ),
-      
+        withMathJax(),
+        p("This website is intended to provide quick win probability estimates for in-game Darts Games."),
+        p(strong("Rules: "),
+        "A single game is composed of three rounds, each consisting of three dart throws each. Players earn
+        1 point for landing the dart on the board, 2 points for landing the dart within the large circle,
+        3 points for landing the dart within the smaller circle, and 5 points for a bullseye. We record
+        the aggregate scores for each round. In the event of a tie for first place after three rounds, the tied players
+        proceed to overtime rounds until the tie is broken."),
+        p("This aim of this project is to estimate the probability distribution for each player's score in a given round,
+        enabling inference and live win probability estimation. A naive approach models the score per round directly with
+        any number of discrete parametric distributions. However, this ignores the natural constructions and limitations of the game.
+        Each round consists of three throws, each taking one of five possible values. As a result, aggregate round scores are
+        unevenly distributed, with certain values occurring far more frequently than others.
+        For example, becauseplayers are more likely to throw a 3 than a 2, they are correspondingly more
+        likely to throw a 3 or a 6 in a round than a 2 or a 5."),
+        p("To address this issue, I model individual throws directly. The rules imply that each throw
+        follows a categorical distribution over the five possible outcomes. I assume that throws are independent and identically distributed
+        across the entire game-an assumption that is imperfect but not severely restrictive in practice. Formally, we write:
+        $$x_{ji} \\sim \\text{Categorical}(\\mathbf{p}),$$
+        where \\(i = 1, 2, 3\\) indexes the throw within a round,
+        \\(j = 1, \\ldots, J\\) indexes the round, and $\\(\\mathbf{p} = (p_0, p_1, p_2, p_3, p_5)\\) gives the probability of scoring
+        \\(0, 1, 2, 3,\\) or \\(5\\) points on a single throw. These probabilities satisfy \\(\\sum_{k=0}^5 p_k = 1\\).
+        I place a conjugate Dirichlet prior on \\(\\mathbf{p}\\):
+        $$\\mathbf{p} \\sim \\text{Dirichlet}(\\boldsymbol{\\alpha}),$$
+        where \\(\\boldsymbol{\\alpha} > 0\\) encodes the prior beliefs about each outcome."),
+        p("Posterior sampling of \\(\\mathbf{p}\\) would be straightforward using a sample Gibbs Sampler. However,
+        we do not directly observe the individual throws \\(x_{j i}\\). Instead, we observe only
+        the round-level totals \\(y_j = \\sum_{i=1}^3 x_{j i}.\\) This missing-data structure complicates inference,
+        but a simple Metropolis–Hastings step facilitates efficient sampling by proposing latent row vectors and
+        accepting or rejecting them based on the resulting change in posterior probability. This approach closely resembles
+        the logic of the EM algorithm commonly used for missing data problems. The full sampler implementation is available on ",
+        a("GitHub", href = "https://github.com/CalebSkinner1/DartsAnalysis/blob/main/MCMC.R", target = "_blank"),
+        "."),
+        p("Leveraging posterior samples, inference on in-game win probabilities becomes straightforward.
+        For now, I assume that each player's throws are independent of those of other competitors. In future work,
+        this framework could be extended hierarchically to borrow strength across players, which
+        would substantially improve estimation for players with limited data."),
+      ),
       tabItem(
         # Current Game
         tabName = "current",
         titlePanel("Live Match Win Probability"),
         
-        p("Enter the players competiting in the match and the current round. The order of which
+        p("Enter the players competing in the match and the current round. The order of which
           you enter the players is assumed to be the order of play."),
         fluidRow(
           column(4,
                  selectizeInput(
                    inputId = "height", 
                    label = "Enter the Height of the Dart Board", 
-                   choices = unique(data$height),
+                   choices = sort(unique(data$height)),
                    options = list(
                      placeholder = "Start typing...",
                      maxOptions = 4  # Limit the number of suggestions shown
@@ -157,23 +191,22 @@ server <- function(input, output, session) {
     
     density <- density_list[[input$height]]
     
-    p <- compute_win_probability(this_game, data, input$height, density) %>%
-      ggplot(aes(x = player, y = win_prob)) +
-      geom_bar(aes(fill = player), stat = "identity") +
-      geom_label(aes(label = scales::percent(win_prob))) +
-      labs(x = "", y = "Win Probability") +
-      scale_y_continuous(labels = scales::percent) +
-      theme(legend.position = "none")
-    plot(p)
+    order <- str_sub(input$players, start = 1, end = 1) |> str_to_upper() |> str_flatten(collapes = "")
+
+    p <- chart_game_probability(this_game, order, data, input$height, density)
+    ggplotly(p)
   })
   
   # Reactivity for Past Games
   
   output$plot_past_game_win_probability <- renderPlotly({ #first plot
     req(input$game_id)
-    game_chart_wrapper(as.numeric(input$game_id), data, density_list)
+    win_prob_tables |>
+      filter(game_id == input$game_id) |>
+    ggplot() +
+    geom_line(aes(x = round, y = win_prob, color = player)) +
+    labs(x = "Round", y = "Win Probability", title = str_c("Game ", game_id))
   })
-  
 }
 
 shinyApp(ui, server)
