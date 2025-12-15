@@ -180,8 +180,7 @@ convert_name <- function(letter){
     letter == "V" ~ "veronica",
     letter == "K" ~ "kenny",
     letter == "Y" ~ "qianzi",
-    .default = NA)
-  
+    .default = NA) 
 }
 
 # converts order abbreviation into list of players
@@ -189,15 +188,15 @@ convert_order <- function(order){
   map_chr(seq_len(str_length(order)), ~str_sub(order, start = .x, end = .x) %>% convert_name())
 }
 
-# charts win probability of game
-chart_game_probability <- function(full_game_tibble, order, data, height, player_probabilities){
+# computes win probability of game and returns tibble
+compute_game_probability_tibble <- function(full_game_tibble, order, data, height, player_probabilities){
   players <- convert_order(order)
   
   game_long <- full_game_tibble %>% pivot_longer(cols = all_of(players), values_to = "score", names_to = "player") %>%
     mutate(player = factor(player, levels = players)) %>%
     arrange(round, player)
   
-  win_prob_data <- map_dfr(0:nrow(game_long), ~{
+  map_dfr(0:nrow(game_long), ~{
     game_long %>% mutate(index = row_number(),
                   score = if_else(index > .x, NA, score)) %>%
       select(-index) %>%
@@ -208,10 +207,27 @@ chart_game_probability <- function(full_game_tibble, order, data, height, player
     }) %>%
     pivot_longer(cols = all_of(players), values_to = "win_prob", names_to = "player")
   
-  win_prob_data %>%
+}
+chart_game_probability <- function(full_game_tibble, order, data, height, player_probabilities){
+  compute_game_probability_tibble(full_game_tibble, order, data, height, player_probabilities) |>
     ggplot() +
     geom_line(aes(x = round, y = win_prob, color = player)) +
     labs(x = "Round", y = "Win Probability")
+}
+
+game_prob_wrapper <- function(game_id, data, player_probabilities_list){
+  specific_game <- data %>% filter(game == game_id)
+  
+  order <- specific_game %>% slice(1) %>% pull(order)
+  
+  height <- specific_game %>% slice(1) %>% pull(height)
+  
+  player_probabilities <- player_probabilities_list[[height]]
+  
+  game_tibble <- specific_game %>% select(round, all_of(convert_order(order))) %>%
+    mutate(across(all_of(convert_order(order)), ~as.numeric(.x)))
+  
+  compute_game_probability_tibble(full_game_tibble = game_tibble, order = order, data = data, height = height, player_probabilities = player_probabilities)
 }
 
 game_chart_wrapper <- function(game_id, data, player_probabilities_list){
