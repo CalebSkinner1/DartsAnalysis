@@ -1,4 +1,4 @@
-## DartsAnalysis GitHub Page
+## DartsAnalysis GitHub Page 🎯
 
 This GitHub Page hosts the results and analysis of a dartboard competition played by Rice University Graduate Students in Maxfield Hall. The rules are simple. There are three rounds in a game. In each round, three darts are thrown by each participant at a magnetic dartboard. Players earn 1 point for landing the dart on the board, 2 points for landing the dart within the large circle, 3 points for landing the dart within the smaller circle, and 5 points for a bulls-eye. The aggregate scores for each round are recorded. This GitHub page hosts the results, a Metropolis-Hastings sampler to estimate a player's probability of each throw outcome, and analysis.
 
