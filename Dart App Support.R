@@ -17,3 +17,6 @@ names <- c("caleb", "joshua", "quadri", "joseph", "daniel")
 
 density_list <- list("mid" = density_mid, "high" = density_high,
                      "low" = density_low, "256" = density_256)
+
+win_prob_tables <- read_csv("win_prob_tables.csv")
+

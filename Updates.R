@@ -9,7 +9,6 @@ data <- read_excel("Maxfield - Darts.xlsx") %>%
   filter(!is.na(date)) %>%
   filter(base != "bad magnet", angle == "vertical")
 
-
 # Load Win Probabilities for each height ----------------------------------
 
 # load old game counts and compute new
@@ -57,7 +56,6 @@ cleaned_data <- data |> select(-qianzi, -kenny, -veronica, -theo) |>
     order = str_remove_all(order, "Y|K|V|T")
   )
 
-
 last_game_id <- read_csv("last_game_id.csv")
 win_prob_tables <- read_csv("win_prob_tables.csv")
 game_ids <- filter(cleaned_data, game > last_game_id$value[1]) |> pull(game) |> unique()
@@ -67,11 +65,7 @@ win_prob_tables <- bind_rows(win_prob_tables, map_dfr(game_ids, ~game_prob_wrapp
 
 write_csv(win_prob_tables, "win_prob_tables.csv")
 # separate out, so we don't have to run each game table every time
-max(game_ids) |> as_tibble() |> write_csv("last_game_id.csv")
-
-if (interactive()) {
-  setwd(("DartsAnalysis"))
-}
+max(win_prob_tables$game_id) |> as_tibble() |> write_csv("last_game_id.csv")
 
 rsconnect::deployApp(appName = "darts-win-probability",
                      account = "calebskinner",
