@@ -69,7 +69,7 @@ ui <- dashboardPage(
         titlePanel("Live Match Win Probability"),
         
         p("Enter the players competing in the match and the current round. The order of which
-          you enter the players is assumed to be the order of play."),
+          you enter the players is assumed to be the order of play. This will take a moment to load."),
         fluidRow(
           column(4,
                  selectizeInput(
@@ -113,7 +113,7 @@ ui <- dashboardPage(
         tabName = "past",
         titlePanel("Past Match Win Probability"),
         
-        p("Select any Game ID to see the corresponding win probability graph. The graph will take a moment to load."),
+        p("Select any Game ID to see the corresponding win probability graph."),
         selectizeInput(
           inputId = "game_id", 
           label = "Enter a Game ID", 
