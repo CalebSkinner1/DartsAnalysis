@@ -5,7 +5,7 @@ source("Win Probability Support.R")
 # read data from excel and draw data
 data <- read_excel("Maxfield - Darts.xlsx") %>%
   clean_names() %>%
-  select(angle:joseph) %>%
+  select(angle:theo) %>%
   filter(!is.na(date)) %>%
   filter(base != "bad magnet", angle == "vertical")
 
@@ -27,17 +27,15 @@ toc()
 density_list <- list("mid" = density_mid, "high" = density_high, "low" = density_low, "256" = density_256)
 
 # Download win probability tables for each game ----------------------------------
-cleaned_data <- data |> select(-qianzi, -kenny, -veronica) |>
+cleaned_data <- data |> select(-qianzi, -kenny, -veronica, -theo) |>
   mutate(
-    order = str_remove(order, "Y|K|V")
+    order = str_remove(order, "Y|K|V|T")
   )
 
 
 last_game_id <- read_csv("last_game_id.csv")
 win_prob_tables <- read_csv("win_prob_tables.csv")
-last_game_id <- 0
-game_ids <- filter(cleaned_data, game > last_game_id$value[1],
-  game < 44) |> pull(game) |> unique()
+game_ids <- filter(cleaned_data, game > last_game_id$value[1], game < 241) |> pull(game) |> unique()
 
 win_prob_tables <- bind_rows(win_prob_tables, map_dfr(game_ids, ~game_prob_wrapper(.x, cleaned_data, density_list) |>
   mutate(game_id = .x)))
@@ -48,5 +46,3 @@ max(game_ids) |> as_tibble() |> write_csv("last_game_id.csv")
 
 # to do:
 # 1. run win_prob_tables
-# 2. verify that in game win probability function works
-# 3. verify that win_prob_tables works

@@ -189,11 +189,18 @@ server <- function(input, output, session) {
       this_game <- this_game %>% add_row(round = 3)
     }
     
+    throws <- sum(!is.na(this_game[-1,]))
+
     density <- density_list[[input$height]]
     
-    order <- str_sub(input$players, start = 1, end = 1) |> str_to_upper() |> str_flatten(collapes = "")
+    order <- str_sub(input$players, start = 1, end = 1) |> str_to_upper() |> str_flatten(collapse = "")
 
-    p <- chart_game_probability(this_game, order, data, input$height, density)
+    p <- compute_game_probability_tibble(this_game, order, data, input$height, density) |>
+      slice(1:(throws+str_length(order))) |>
+      ggplot() +
+      geom_line(aes(x = round, y = win_prob, color = player)) +
+      labs(x = "Round", y = "Win Probability")
+    
     ggplotly(p)
   })
   
@@ -203,9 +210,12 @@ server <- function(input, output, session) {
     req(input$game_id)
     win_prob_tables |>
       filter(game_id == input$game_id) |>
-    ggplot() +
-    geom_line(aes(x = round, y = win_prob, color = player)) +
-    labs(x = "Round", y = "Win Probability", title = str_c("Game ", game_id))
+      mutate(
+        round = round(round, digits = 2),
+        win_prob = round(win_prob, digits = 4)) |>
+      ggplot() +
+      geom_line(aes(x = round, y = win_prob, color = player)) +
+      labs(x = "Round", y = "Win Probability", title = str_c("Game ", input$game_id))
   })
 }
 
